@@ -17,8 +17,8 @@ func TestTransportLayerCC_RunLengthChunkUnmarshal(t *testing.T) {
 			Name: "example1",
 			Data: []byte{0, 0xDD},
 			Want: RunLengthChunk{
-				Type:               typeRunLengthChunk,
-				PacketStatusSymbol: typePacketNotReceived,
+				Type:               TypeTCCRunLengthChunk,
+				PacketStatusSymbol: TypeTCCPacketNotReceived,
 				RunLength:          221,
 			},
 			WantError: nil,
@@ -28,8 +28,8 @@ func TestTransportLayerCC_RunLengthChunkUnmarshal(t *testing.T) {
 			Name: "example2",
 			Data: []byte{0x60, 0x18},
 			Want: RunLengthChunk{
-				Type:               typeRunLengthChunk,
-				PacketStatusSymbol: typePacketReceivedWithoutDelta,
+				Type:               TypeTCCRunLengthChunk,
+				PacketStatusSymbol: TypeTCCPacketReceivedWithoutDelta,
 				RunLength:          24,
 			},
 			WantError: nil,
@@ -57,8 +57,8 @@ func TestTransportLayerCC_RunLengthChunkMarshal(t *testing.T) {
 			//3.1.3 example1: https://tools.ietf.org/html/draft-holmer-rmcat-transport-wide-cc-extensions-01#page-7
 			Name: "example1",
 			Data: RunLengthChunk{
-				Type:               typeRunLengthChunk,
-				PacketStatusSymbol: typePacketNotReceived,
+				Type:               TypeTCCRunLengthChunk,
+				PacketStatusSymbol: TypeTCCPacketNotReceived,
 				RunLength:          221,
 			},
 			Want:      []byte{0, 0xDD},
@@ -68,8 +68,8 @@ func TestTransportLayerCC_RunLengthChunkMarshal(t *testing.T) {
 			//3.1.3 example2: https://tools.ietf.org/html/draft-holmer-rmcat-transport-wide-cc-extensions-01#page-7
 			Name: "example2",
 			Data: RunLengthChunk{
-				Type:               typeRunLengthChunk,
-				PacketStatusSymbol: typePacketReceivedWithoutDelta,
+				Type:               TypeTCCRunLengthChunk,
+				PacketStatusSymbol: TypeTCCPacketReceivedWithoutDelta,
 				RunLength:          24,
 			},
 			Want:      []byte{0x60, 0x18},
@@ -96,9 +96,9 @@ func TestTransportLayerCC_StatusVectorChunkUnmarshal(t *testing.T) {
 			Name: "example1",
 			Data: []byte{0x9F, 0x1C},
 			Want: StatusVectorChunk{
-				Type:       typeStatusVectorChunk,
-				SymbolSize: typeSymbolSizeOneBit,
-				SymbolList: []uint16{typeSymbolListPacketReceived, typeSymbolListPacketNotReceived, typeSymbolListPacketNotReceived, typeSymbolListPacketNotReceived, typeSymbolListPacketNotReceived, typeSymbolListPacketNotReceived, typeSymbolListPacketReceived, typeSymbolListPacketReceived, typeSymbolListPacketReceived, typeSymbolListPacketNotReceived, typeSymbolListPacketNotReceived, typeSymbolListPacketNotReceived, typeSymbolListPacketReceived, typeSymbolListPacketReceived},
+				Type:       TypeTCCStatusVectorChunk,
+				SymbolSize: TypeTCCSymbolSizeOneBit,
+				SymbolList: []uint16{TypeTCCPacketNotReceived, TypeTCCPacketReceivedSmallDelta, TypeTCCPacketReceivedSmallDelta, TypeTCCPacketReceivedSmallDelta, TypeTCCPacketReceivedSmallDelta, TypeTCCPacketReceivedSmallDelta, TypeTCCPacketNotReceived, TypeTCCPacketNotReceived, TypeTCCPacketNotReceived, TypeTCCPacketReceivedSmallDelta, TypeTCCPacketReceivedSmallDelta, TypeTCCPacketReceivedSmallDelta, TypeTCCPacketNotReceived, TypeTCCPacketNotReceived},
 			},
 			WantError: nil,
 		},
@@ -107,9 +107,9 @@ func TestTransportLayerCC_StatusVectorChunkUnmarshal(t *testing.T) {
 			Name: "example2",
 			Data: []byte{0xCD, 0x50},
 			Want: StatusVectorChunk{
-				Type:       typeStatusVectorChunk,
-				SymbolSize: typeSymbolSizeTwoBit,
-				SymbolList: []uint16{typePacketNotReceived, typePacketReceivedWithoutDelta, typePacketReceivedSmallDelta, typePacketReceivedSmallDelta, typePacketReceivedSmallDelta, typePacketNotReceived, typePacketNotReceived},
+				Type:       TypeTCCStatusVectorChunk,
+				SymbolSize: TypeTCCSymbolSizeTwoBit,
+				SymbolList: []uint16{TypeTCCPacketNotReceived, TypeTCCPacketReceivedWithoutDelta, TypeTCCPacketReceivedSmallDelta, TypeTCCPacketReceivedSmallDelta, TypeTCCPacketReceivedSmallDelta, TypeTCCPacketNotReceived, TypeTCCPacketNotReceived},
 			},
 			WantError: nil,
 		},
@@ -137,9 +137,9 @@ func TestTransportLayerCC_StatusVectorChunkMarshal(t *testing.T) {
 			//3.1.4 example1: https://tools.ietf.org/html/draft-holmer-rmcat-transport-wide-cc-extensions-01#page-7
 			Name: "example1",
 			Data: StatusVectorChunk{
-				Type:       typeStatusVectorChunk,
-				SymbolSize: typeSymbolSizeOneBit,
-				SymbolList: []uint16{typeSymbolListPacketReceived, typeSymbolListPacketNotReceived, typeSymbolListPacketNotReceived, typeSymbolListPacketNotReceived, typeSymbolListPacketNotReceived, typeSymbolListPacketNotReceived, typeSymbolListPacketReceived, typeSymbolListPacketReceived, typeSymbolListPacketReceived, typeSymbolListPacketNotReceived, typeSymbolListPacketNotReceived, typeSymbolListPacketNotReceived, typeSymbolListPacketReceived, typeSymbolListPacketReceived},
+				Type:       TypeTCCStatusVectorChunk,
+				SymbolSize: TypeTCCSymbolSizeOneBit,
+				SymbolList: []uint16{TypeTCCPacketNotReceived, TypeTCCPacketReceivedSmallDelta, TypeTCCPacketReceivedSmallDelta, TypeTCCPacketReceivedSmallDelta, TypeTCCPacketReceivedSmallDelta, TypeTCCPacketReceivedSmallDelta, TypeTCCPacketNotReceived, TypeTCCPacketNotReceived, TypeTCCPacketNotReceived, TypeTCCPacketReceivedSmallDelta, TypeTCCPacketReceivedSmallDelta, TypeTCCPacketReceivedSmallDelta, TypeTCCPacketNotReceived, TypeTCCPacketNotReceived},
 			},
 			Want:      []byte{0x9F, 0x1C},
 			WantError: nil,
@@ -148,9 +148,9 @@ func TestTransportLayerCC_StatusVectorChunkMarshal(t *testing.T) {
 			//3.1.4 example2: https://tools.ietf.org/html/draft-holmer-rmcat-transport-wide-cc-extensions-01#page-7
 			Name: "example2",
 			Data: StatusVectorChunk{
-				Type:       typeStatusVectorChunk,
-				SymbolSize: typeSymbolSizeTwoBit,
-				SymbolList: []uint16{typePacketNotReceived, typePacketReceivedWithoutDelta, typePacketReceivedSmallDelta, typePacketReceivedSmallDelta, typePacketReceivedSmallDelta, typePacketNotReceived, typePacketNotReceived},
+				Type:       TypeTCCStatusVectorChunk,
+				SymbolSize: TypeTCCSymbolSizeTwoBit,
+				SymbolList: []uint16{TypeTCCPacketNotReceived, TypeTCCPacketReceivedWithoutDelta, TypeTCCPacketReceivedSmallDelta, TypeTCCPacketReceivedSmallDelta, TypeTCCPacketReceivedSmallDelta, TypeTCCPacketNotReceived, TypeTCCPacketNotReceived},
 			},
 			Want:      []byte{0xCD, 0x50},
 			WantError: nil,
@@ -175,7 +175,8 @@ func TestTransportLayerCC_RecvDeltaUnmarshal(t *testing.T) {
 			Name: "small delta 63.75ms",
 			Data: []byte{0xFF},
 			Want: RecvDelta{
-				Type:  typePacketReceivedSmallDelta,
+				Type: TypeTCCPacketReceivedSmallDelta,
+				// 255 * 250
 				Delta: 63750,
 			},
 			WantError: nil,
@@ -184,8 +185,19 @@ func TestTransportLayerCC_RecvDeltaUnmarshal(t *testing.T) {
 			Name: "big delta 8191.75ms",
 			Data: []byte{0x7F, 0xFF},
 			Want: RecvDelta{
-				Type:  typePacketReceivedLargeDelta,
+				Type: TypeTCCPacketReceivedLargeDelta,
+				// 32767 * 250
 				Delta: 8191750,
+			},
+			WantError: nil,
+		},
+		{
+			Name: "big delta -8192ms",
+			Data: []byte{0x80, 0x00},
+			Want: RecvDelta{
+				Type: TypeTCCPacketReceivedLargeDelta,
+				// -32768 * 250
+				Delta: -8192000,
 			},
 			WantError: nil,
 		},
@@ -212,7 +224,8 @@ func TestTransportLayerCC_RecvDeltaMarshal(t *testing.T) {
 		{
 			Name: "small delta 63.75ms",
 			Data: RecvDelta{
-				Type:  typePacketReceivedSmallDelta,
+				Type: TypeTCCPacketReceivedSmallDelta,
+				// 255 * 250
 				Delta: 63750,
 			},
 			Want:      []byte{0xFF},
@@ -221,10 +234,21 @@ func TestTransportLayerCC_RecvDeltaMarshal(t *testing.T) {
 		{
 			Name: "big delta 8191.75ms",
 			Data: RecvDelta{
-				Type:  typePacketReceivedLargeDelta,
+				Type: TypeTCCPacketReceivedLargeDelta,
+				// 32767 * 250
 				Delta: 8191750,
 			},
 			Want:      []byte{0x7F, 0xFF},
+			WantError: nil,
+		},
+		{
+			Name: "big delta -8192ms",
+			Data: RecvDelta{
+				Type: TypeTCCPacketReceivedLargeDelta,
+				// -32768 * 250
+				Delta: -8192000,
+			},
+			Want:      []byte{0x80, 0x00},
 			WantError: nil,
 		},
 	} {
@@ -288,17 +312,17 @@ func TestTransportLayerCC_Unmarshal(t *testing.T) {
 				ReferenceTime:      4057090,
 				FbPktCount:         23,
 				// 0b00100000, 0b00000001
-				PacketChunks: []iPacketStautsChunk{
+				PacketChunks: []PacketStatusChunk{
 					&RunLengthChunk{
-						Type:               typeRunLengthChunk,
-						PacketStatusSymbol: typePacketReceivedSmallDelta,
+						Type:               TypeTCCRunLengthChunk,
+						PacketStatusSymbol: TypeTCCPacketReceivedSmallDelta,
 						RunLength:          1,
 					},
 				},
 				// 0b10010100
 				RecvDeltas: []*RecvDelta{
 					{
-						Type:  typePacketReceivedSmallDelta,
+						Type:  TypeTCCPacketReceivedSmallDelta,
 						Delta: 37000,
 					},
 				},
@@ -311,7 +335,7 @@ func TestTransportLayerCC_Unmarshal(t *testing.T) {
 				0xaf, 0xcd, 0x0, 0x6,
 				0xfa, 0x17, 0xfa, 0x17,
 				0x19, 0x3d, 0xd8, 0xbb,
-				0x1, 0x74, 0x0, 0x2,
+				0x1, 0x74, 0x0, 0xe,
 				0x45, 0xb1, 0x5a, 0x40,
 				0xd8, 0x0, 0xf0, 0xff,
 				0xd0, 0x0, 0x0, 0x3,
@@ -326,30 +350,213 @@ func TestTransportLayerCC_Unmarshal(t *testing.T) {
 				SenderSSRC:         4195875351,
 				MediaSSRC:          423483579,
 				BaseSequenceNumber: 372,
-				PacketStatusCount:  2,
+				PacketStatusCount:  14,
 				ReferenceTime:      4567386,
 				FbPktCount:         64,
-				PacketChunks: []iPacketStautsChunk{
+				PacketChunks: []PacketStatusChunk{
 					&StatusVectorChunk{
-						Type:       typeStatusVectorChunk,
-						SymbolSize: typeSymbolSizeTwoBit,
-						SymbolList: []uint16{typePacketReceivedSmallDelta, typePacketReceivedLargeDelta, typePacketNotReceived, typePacketNotReceived, typePacketNotReceived, typePacketNotReceived, typePacketNotReceived},
+						Type:       TypeTCCStatusVectorChunk,
+						SymbolSize: TypeTCCSymbolSizeTwoBit,
+						SymbolList: []uint16{TypeTCCPacketReceivedSmallDelta, TypeTCCPacketReceivedLargeDelta, TypeTCCPacketNotReceived, TypeTCCPacketNotReceived, TypeTCCPacketNotReceived, TypeTCCPacketNotReceived, TypeTCCPacketNotReceived},
 					},
 					&StatusVectorChunk{
-						Type:       typeStatusVectorChunk,
-						SymbolSize: typeSymbolSizeTwoBit,
-						SymbolList: []uint16{typePacketReceivedWithoutDelta, typePacketNotReceived, typePacketNotReceived, typePacketReceivedWithoutDelta, typePacketReceivedWithoutDelta, typePacketReceivedWithoutDelta, typePacketReceivedWithoutDelta},
+						Type:       TypeTCCStatusVectorChunk,
+						SymbolSize: TypeTCCSymbolSizeTwoBit,
+						SymbolList: []uint16{TypeTCCPacketReceivedWithoutDelta, TypeTCCPacketNotReceived, TypeTCCPacketNotReceived, TypeTCCPacketReceivedWithoutDelta, TypeTCCPacketReceivedWithoutDelta, TypeTCCPacketReceivedWithoutDelta, TypeTCCPacketReceivedWithoutDelta},
 					},
 				},
 				// 0b10010100
 				RecvDeltas: []*RecvDelta{
 					{
-						Type:  typePacketReceivedSmallDelta,
+						Type:  TypeTCCPacketReceivedSmallDelta,
 						Delta: 52000,
 					},
 					{
-						Type:  typePacketReceivedLargeDelta,
+						Type:  TypeTCCPacketReceivedLargeDelta,
 						Delta: 0,
+					},
+				},
+			},
+			WantError: nil,
+		},
+		{
+			Name: "example3",
+			Data: []byte{
+				0xaf, 0xcd, 0x0, 0x7,
+				0xfa, 0x17, 0xfa, 0x17,
+				0x19, 0x3d, 0xd8, 0xbb,
+				0x1, 0x74, 0x0, 0x6,
+				0x45, 0xb1, 0x5a, 0x40,
+				0x40, 0x2, 0x20, 0x04,
+				0x1f, 0xfe, 0x1f, 0x9a,
+				0xd0, 0x0, 0xd0, 0x0,
+			},
+			Want: TransportLayerCC{
+				Header: Header{
+					Padding: true,
+					Count:   FormatTCC,
+					Type:    TypeTransportSpecificFeedback,
+					Length:  7,
+				},
+				SenderSSRC:         4195875351,
+				MediaSSRC:          423483579,
+				BaseSequenceNumber: 372,
+				PacketStatusCount:  6,
+				ReferenceTime:      4567386,
+				FbPktCount:         64,
+				PacketChunks: []PacketStatusChunk{
+					&RunLengthChunk{
+						Type:               TypeTCCRunLengthChunk,
+						PacketStatusSymbol: 2,
+						RunLength:          2,
+					},
+					&RunLengthChunk{
+						Type:               TypeTCCRunLengthChunk,
+						PacketStatusSymbol: 1,
+						RunLength:          4,
+					},
+				},
+				RecvDeltas: []*RecvDelta{
+					{
+						Type:  TypeTCCPacketReceivedLargeDelta,
+						Delta: 2047500,
+					},
+					{
+						Type:  TypeTCCPacketReceivedLargeDelta,
+						Delta: 2022500,
+					},
+					{
+						Type:  TypeTCCPacketReceivedSmallDelta,
+						Delta: 52000,
+					},
+					{
+						Type:  TypeTCCPacketReceivedSmallDelta,
+						Delta: 0,
+					},
+					{
+						Type:  TypeTCCPacketReceivedSmallDelta,
+						Delta: 52000,
+					},
+					{
+						Type:  TypeTCCPacketReceivedSmallDelta,
+						Delta: 0,
+					},
+				},
+			},
+			WantError: nil,
+		},
+		{
+			Name: "example4",
+			Data: []byte{
+				0xaf, 0xcd, 0x0, 0x7,
+				0xfa, 0x17, 0xfa, 0x17,
+				0x19, 0x3d, 0xd8, 0xbb,
+				0x0, 0x4, 0x0, 0x7,
+				0x10, 0x63, 0x6e, 0x1,
+				0x20, 0x7, 0x4c, 0x24,
+				0x24, 0x10, 0xc, 0xc,
+				0x10, 0x0, 0x0, 0x3,
+			},
+			Want: TransportLayerCC{
+				Header: Header{
+					Padding: true,
+					Count:   FormatTCC,
+					Type:    TypeTransportSpecificFeedback,
+					Length:  7,
+				},
+				SenderSSRC:         4195875351,
+				MediaSSRC:          423483579,
+				BaseSequenceNumber: 4,
+				PacketStatusCount:  7,
+				ReferenceTime:      1074030,
+				FbPktCount:         1,
+				PacketChunks: []PacketStatusChunk{
+					&RunLengthChunk{
+						Type:               TypeTCCRunLengthChunk,
+						PacketStatusSymbol: 1,
+						RunLength:          7,
+					},
+				},
+				RecvDeltas: []*RecvDelta{
+					{
+						Type:  TypeTCCPacketReceivedSmallDelta,
+						Delta: 19000,
+					},
+					{
+						Type:  TypeTCCPacketReceivedSmallDelta,
+						Delta: 9000,
+					},
+					{
+						Type:  TypeTCCPacketReceivedSmallDelta,
+						Delta: 9000,
+					},
+					{
+						Type:  TypeTCCPacketReceivedSmallDelta,
+						Delta: 4000,
+					},
+					{
+						Type:  TypeTCCPacketReceivedSmallDelta,
+						Delta: 3000,
+					},
+					{
+						Type:  TypeTCCPacketReceivedSmallDelta,
+						Delta: 3000,
+					},
+					{
+						Type:  TypeTCCPacketReceivedSmallDelta,
+						Delta: 4000,
+					},
+				},
+			},
+			WantError: nil,
+		},
+		{
+			Name: "example5",
+			Data: []byte{
+				0xaf, 0xcd, 0x0, 0x6,
+				0xfa, 0x17, 0xfa, 0x17,
+				0x19, 0x3d, 0xd8, 0xbb,
+				0x0, 0x1, 0x0, 0xe,
+				0x10, 0x63, 0x6d, 0x0,
+				0xba, 0x0, 0x10, 0xc,
+				0xc, 0x10, 0x0, 0x3,
+			},
+			Want: TransportLayerCC{
+				Header: Header{
+					Padding: true,
+					Count:   FormatTCC,
+					Type:    TypeTransportSpecificFeedback,
+					Length:  6,
+				},
+				SenderSSRC:         4195875351,
+				MediaSSRC:          423483579,
+				BaseSequenceNumber: 1,
+				PacketStatusCount:  14,
+				ReferenceTime:      1074029,
+				FbPktCount:         0,
+				PacketChunks: []PacketStatusChunk{
+					&StatusVectorChunk{
+						Type:       TypeTCCStatusVectorChunk,
+						SymbolSize: 0,
+						SymbolList: []uint16{TypeTCCPacketReceivedSmallDelta, TypeTCCPacketReceivedSmallDelta, TypeTCCPacketReceivedSmallDelta, TypeTCCPacketNotReceived, TypeTCCPacketReceivedSmallDelta, TypeTCCPacketNotReceived, TypeTCCPacketNotReceived, TypeTCCPacketNotReceived, TypeTCCPacketNotReceived, TypeTCCPacketNotReceived, TypeTCCPacketNotReceived, TypeTCCPacketNotReceived, TypeTCCPacketNotReceived, TypeTCCPacketNotReceived},
+					},
+				},
+				RecvDeltas: []*RecvDelta{
+					{
+						Type:  TypeTCCPacketReceivedSmallDelta,
+						Delta: 4000,
+					},
+					{
+						Type:  TypeTCCPacketReceivedSmallDelta,
+						Delta: 3000,
+					},
+					{
+						Type:  TypeTCCPacketReceivedSmallDelta,
+						Delta: 3000,
+					},
+					{
+						Type:  TypeTCCPacketReceivedSmallDelta,
+						Delta: 4000,
 					},
 				},
 			},
@@ -390,17 +597,17 @@ func TestTransportLayerCC_Marshal(t *testing.T) {
 				ReferenceTime:      4057090,
 				FbPktCount:         23,
 				// 0b00100000, 0b00000001
-				PacketChunks: []iPacketStautsChunk{
+				PacketChunks: []PacketStatusChunk{
 					&RunLengthChunk{
-						Type:               typeRunLengthChunk,
-						PacketStatusSymbol: typePacketReceivedSmallDelta,
+						Type:               TypeTCCRunLengthChunk,
+						PacketStatusSymbol: TypeTCCPacketReceivedSmallDelta,
 						RunLength:          1,
 					},
 				},
 				// 0b10010100
 				RecvDeltas: []*RecvDelta{
 					{
-						Type:  typePacketReceivedSmallDelta,
+						Type:  TypeTCCPacketReceivedSmallDelta,
 						Delta: 37000,
 					},
 				},
@@ -411,12 +618,7 @@ func TestTransportLayerCC_Marshal(t *testing.T) {
 				0x43, 0x3, 0x2f, 0xa0,
 				0x0, 0x99, 0x0, 0x1,
 				0x3d, 0xe8, 0x2, 0x17,
-				// change last byte '0b00000001' to '0b00000000', make ci pass
-				0x20, 0x1, 0x94, 0x0,
-				// 0b00100000, 0b00000001, 0b10010100, 0b00000001,
-				// the 'Want []byte' came from chrome, and
-				// the padding byte is '0b00000001', but i think should be '0b00000000' when i read the RFC, what's wrong?
-				// webrtc code: https://webrtc.googlesource.com/src/webrtc/+/f54860e9ef0b68e182a01edc994626d21961bc4b/modules/rtp_rtcp/source/rtcp_packet/transport_feedback.cc
+				0x20, 0x1, 0x94, 0x1,
 			},
 			WantError: nil,
 		},
@@ -435,26 +637,26 @@ func TestTransportLayerCC_Marshal(t *testing.T) {
 				PacketStatusCount:  2,
 				ReferenceTime:      4567386,
 				FbPktCount:         64,
-				PacketChunks: []iPacketStautsChunk{
+				PacketChunks: []PacketStatusChunk{
 					&StatusVectorChunk{
-						Type:       typeStatusVectorChunk,
-						SymbolSize: typeSymbolSizeTwoBit,
-						SymbolList: []uint16{typePacketReceivedSmallDelta, typePacketReceivedLargeDelta, typePacketNotReceived, typePacketNotReceived, typePacketNotReceived, typePacketNotReceived, typePacketNotReceived},
+						Type:       TypeTCCStatusVectorChunk,
+						SymbolSize: TypeTCCSymbolSizeTwoBit,
+						SymbolList: []uint16{TypeTCCPacketReceivedSmallDelta, TypeTCCPacketReceivedLargeDelta, TypeTCCPacketNotReceived, TypeTCCPacketNotReceived, TypeTCCPacketNotReceived, TypeTCCPacketNotReceived, TypeTCCPacketNotReceived},
 					},
 					&StatusVectorChunk{
-						Type:       typeStatusVectorChunk,
-						SymbolSize: typeSymbolSizeTwoBit,
-						SymbolList: []uint16{typePacketReceivedWithoutDelta, typePacketNotReceived, typePacketNotReceived, typePacketReceivedWithoutDelta, typePacketReceivedWithoutDelta, typePacketReceivedWithoutDelta, typePacketReceivedWithoutDelta},
+						Type:       TypeTCCStatusVectorChunk,
+						SymbolSize: TypeTCCSymbolSizeTwoBit,
+						SymbolList: []uint16{TypeTCCPacketReceivedWithoutDelta, TypeTCCPacketNotReceived, TypeTCCPacketNotReceived, TypeTCCPacketReceivedWithoutDelta, TypeTCCPacketReceivedWithoutDelta, TypeTCCPacketReceivedWithoutDelta, TypeTCCPacketReceivedWithoutDelta},
 					},
 				},
 				// 0b10010100
 				RecvDeltas: []*RecvDelta{
 					{
-						Type:  typePacketReceivedSmallDelta,
+						Type:  TypeTCCPacketReceivedSmallDelta,
 						Delta: 52000,
 					},
 					{
-						Type:  typePacketReceivedLargeDelta,
+						Type:  TypeTCCPacketReceivedLargeDelta,
 						Delta: 0,
 					},
 				},
@@ -466,12 +668,190 @@ func TestTransportLayerCC_Marshal(t *testing.T) {
 				0x1, 0x74, 0x0, 0x2,
 				0x45, 0xb1, 0x5a, 0x40,
 				0xd8, 0x0, 0xf0, 0xff,
-				// change last byte '0b00000011' to '0b00000000', make ci pass
-				0xd0, 0x0, 0x0, 0x0,
-				// 0b11010000, 0b00000000, 0b00000000, 0b00000011,
-				// the 'Want []byte' came from chrome, and
-				// the padding byte is '0b00000011', but i think should be '0b00000000' when i read the RFC
-				// webrtc code: https://webrtc.googlesource.com/src/webrtc/+/f54860e9ef0b68e182a01edc994626d21961bc4b/modules/rtp_rtcp/source/rtcp_packet/transport_feedback.cc
+				0xd0, 0x0, 0x0, 0x2,
+			},
+			WantError: nil,
+		},
+		{
+			Name: "example3",
+			Data: TransportLayerCC{
+				Header: Header{
+					Padding: true,
+					Count:   FormatTCC,
+					Type:    TypeTransportSpecificFeedback,
+					Length:  7,
+				},
+				SenderSSRC:         4195875351,
+				MediaSSRC:          423483579,
+				BaseSequenceNumber: 372,
+				PacketStatusCount:  6,
+				ReferenceTime:      4567386,
+				FbPktCount:         64,
+				PacketChunks: []PacketStatusChunk{
+					&RunLengthChunk{
+						Type:               TypeTCCRunLengthChunk,
+						PacketStatusSymbol: 2,
+						RunLength:          2,
+					},
+					&RunLengthChunk{
+						Type:               TypeTCCRunLengthChunk,
+						PacketStatusSymbol: 1,
+						RunLength:          4,
+					},
+				},
+				RecvDeltas: []*RecvDelta{
+					{
+						Type:  TypeTCCPacketReceivedLargeDelta,
+						Delta: 2047500,
+					},
+					{
+						Type:  TypeTCCPacketReceivedLargeDelta,
+						Delta: 2022500,
+					},
+					{
+						Type:  TypeTCCPacketReceivedSmallDelta,
+						Delta: 52000,
+					},
+					{
+						Type:  TypeTCCPacketReceivedSmallDelta,
+						Delta: 0,
+					},
+					{
+						Type:  TypeTCCPacketReceivedSmallDelta,
+						Delta: 52000,
+					},
+					{
+						Type:  TypeTCCPacketReceivedSmallDelta,
+						Delta: 0,
+					},
+				},
+			},
+			Want: []byte{
+				0xaf, 0xcd, 0x0, 0x7,
+				0xfa, 0x17, 0xfa, 0x17,
+				0x19, 0x3d, 0xd8, 0xbb,
+				0x1, 0x74, 0x0, 0x6,
+				0x45, 0xb1, 0x5a, 0x40,
+				0x40, 0x2, 0x20, 0x04,
+				0x1f, 0xfe, 0x1f, 0x9a,
+				0xd0, 0x0, 0xd0, 0x0,
+			},
+			WantError: nil,
+		},
+		{
+			Name: "example4",
+			Data: TransportLayerCC{
+				Header: Header{
+					Padding: true,
+					Count:   FormatTCC,
+					Type:    TypeTransportSpecificFeedback,
+					Length:  7,
+				},
+				SenderSSRC:         4195875351,
+				MediaSSRC:          423483579,
+				BaseSequenceNumber: 4,
+				PacketStatusCount:  7,
+				ReferenceTime:      1074030,
+				FbPktCount:         1,
+				PacketChunks: []PacketStatusChunk{
+					&RunLengthChunk{
+						Type:               TypeTCCRunLengthChunk,
+						PacketStatusSymbol: 1,
+						RunLength:          7,
+					},
+				},
+				RecvDeltas: []*RecvDelta{
+					{
+						Type:  TypeTCCPacketReceivedSmallDelta,
+						Delta: 19000,
+					},
+					{
+						Type:  TypeTCCPacketReceivedSmallDelta,
+						Delta: 9000,
+					},
+					{
+						Type:  TypeTCCPacketReceivedSmallDelta,
+						Delta: 9000,
+					},
+					{
+						Type:  TypeTCCPacketReceivedSmallDelta,
+						Delta: 4000,
+					},
+					{
+						Type:  TypeTCCPacketReceivedSmallDelta,
+						Delta: 3000,
+					},
+					{
+						Type:  TypeTCCPacketReceivedSmallDelta,
+						Delta: 3000,
+					},
+					{
+						Type:  TypeTCCPacketReceivedSmallDelta,
+						Delta: 4000,
+					},
+				},
+			},
+			Want: []byte{
+				0xaf, 0xcd, 0x0, 0x7,
+				0xfa, 0x17, 0xfa, 0x17,
+				0x19, 0x3d, 0xd8, 0xbb,
+				0x0, 0x4, 0x0, 0x7,
+				0x10, 0x63, 0x6e, 0x1,
+				0x20, 0x7, 0x4c, 0x24,
+				0x24, 0x10, 0xc, 0xc,
+				0x10, 0x0, 0x0, 0x3,
+			},
+			WantError: nil,
+		},
+		{
+			Name: "example5",
+			Data: TransportLayerCC{
+				Header: Header{
+					Padding: true,
+					Count:   FormatTCC,
+					Type:    TypeTransportSpecificFeedback,
+					Length:  6,
+				},
+				SenderSSRC:         4195875351,
+				MediaSSRC:          423483579,
+				BaseSequenceNumber: 1,
+				PacketStatusCount:  14,
+				ReferenceTime:      1074029,
+				FbPktCount:         0,
+				PacketChunks: []PacketStatusChunk{
+					&StatusVectorChunk{
+						Type:       TypeTCCStatusVectorChunk,
+						SymbolSize: 0,
+						SymbolList: []uint16{TypeTCCPacketReceivedSmallDelta, TypeTCCPacketReceivedSmallDelta, TypeTCCPacketReceivedSmallDelta, TypeTCCPacketNotReceived, TypeTCCPacketReceivedSmallDelta, TypeTCCPacketNotReceived, TypeTCCPacketNotReceived, TypeTCCPacketNotReceived, TypeTCCPacketNotReceived, TypeTCCPacketNotReceived, TypeTCCPacketNotReceived, TypeTCCPacketNotReceived, TypeTCCPacketNotReceived, TypeTCCPacketNotReceived},
+					},
+				},
+				RecvDeltas: []*RecvDelta{
+					{
+						Type:  TypeTCCPacketReceivedSmallDelta,
+						Delta: 4000,
+					},
+					{
+						Type:  TypeTCCPacketReceivedSmallDelta,
+						Delta: 3000,
+					},
+					{
+						Type:  TypeTCCPacketReceivedSmallDelta,
+						Delta: 3000,
+					},
+					{
+						Type:  TypeTCCPacketReceivedSmallDelta,
+						Delta: 4000,
+					},
+				},
+			},
+			Want: []byte{
+				0xaf, 0xcd, 0x0, 0x6,
+				0xfa, 0x17, 0xfa, 0x17,
+				0x19, 0x3d, 0xd8, 0xbb,
+				0x0, 0x1, 0x0, 0xe,
+				0x10, 0x63, 0x6d, 0x0,
+				0xba, 0x0, 0x10, 0xc,
+				0xc, 0x10, 0x0, 0x2,
 			},
 			WantError: nil,
 		},

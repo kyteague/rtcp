@@ -39,35 +39,33 @@ import (
 // for packet status chunk
 const (
 	// type of packet status chunk
-	typeRunLengthChunk    = 0
-	typeStatusVectorChunk = 1
+	TypeTCCRunLengthChunk    = 0
+	TypeTCCStatusVectorChunk = 1
 
 	// len of packet status chunk
-	packetStautsChunkLength = 2
-
-	// for Status Vector Chunk
-	// https://tools.ietf.org/html/draft-holmer-rmcat-transport-wide-cc-extensions-01#section-3.1.4
-	// if S == typeSymbolSizeOneBit, symbol list will be:
-	// typeSymbolListPacketReceived or typeSymbolListPacketNotReceived
-	typeSymbolSizeOneBit = 0
-
-	typeSymbolListPacketReceived    = 0
-	typeSymbolListPacketNotReceived = 1
-
-	// if S == typeSymbolSizeTwoBit, symbol list will be same as:
-	// https://tools.ietf.org/html/draft-holmer-rmcat-transport-wide-cc-extensions-01#section-3.1.4
-	typeSymbolSizeTwoBit = 1
+	packetStatusChunkLength = 2
 )
 
 // type of packet status symbol and recv delta
 const (
 	// https://tools.ietf.org/html/draft-holmer-rmcat-transport-wide-cc-extensions-01#section-3.1.1
-	typePacketNotReceived = iota
-	typePacketReceivedSmallDelta
-	typePacketReceivedLargeDelta
+	TypeTCCPacketNotReceived = uint16(iota)
+	TypeTCCPacketReceivedSmallDelta
+	TypeTCCPacketReceivedLargeDelta
 	// https://tools.ietf.org/html/draft-holmer-rmcat-transport-wide-cc-extensions-01#page-7
 	// see Example 2: "packet received, w/o recv delta"
-	typePacketReceivedWithoutDelta
+	TypeTCCPacketReceivedWithoutDelta
+)
+
+// for status vector chunk
+const (
+	// https://tools.ietf.org/html/draft-holmer-rmcat-transport-wide-cc-extensions-01#section-3.1.4
+	TypeTCCSymbolSizeOneBit = 0
+	TypeTCCSymbolSizeTwoBit = 1
+
+	// Notice: RFC is wrong: "packet received" (0) and "packet not received" (1)
+	// if S == TypeTCCSymbolSizeOneBit, symbol list will be: TypeTCCPacketNotReceived TypeTCCPacketReceivedSmallDelta
+	// if S == TypeTCCSymbolSizeTwoBit, symbol list will be same as above:
 )
 
 var _ Packet = (*TransportLayerCC)(nil) // assert is a Packet
@@ -77,27 +75,27 @@ var (
 	errDeltaExceedLimit        = errors.New("delta exceed limit")
 )
 
-// packetStatusChunk has two kinds:
+// PacketStatusChunk has two kinds:
 // RunLengthChunk and StatusVectorChunk
-type iPacketStautsChunk interface {
+type PacketStatusChunk interface {
 	Marshal() ([]byte, error)
 	Unmarshal(rawPacket []byte) error
 }
 
-// RunLengthChunk T=typeRunLengthChunk
+// RunLengthChunk T=TypeTCCRunLengthChunk
 // 0                   1
 // 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5
 // +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 // |T| S |       Run Length        |
 // +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 type RunLengthChunk struct {
-	iPacketStautsChunk
+	PacketStatusChunk
 
-	// T = typeRunLengthChunk
+	// T = TypeTCCRunLengthChunk
 	Type uint16
 
 	// S: type of packet status
-	// kind: typePacketNotReceived or...
+	// kind: TypeTCCPacketNotReceived or...
 	PacketStatusSymbol uint16
 
 	// RunLength: count of S
@@ -123,12 +121,12 @@ func (r RunLengthChunk) Marshal() ([]byte, error) {
 
 // Unmarshal ..
 func (r *RunLengthChunk) Unmarshal(rawPacket []byte) error {
-	if len(rawPacket) != packetStautsChunkLength {
+	if len(rawPacket) != packetStatusChunkLength {
 		return errPacketStatusChunkLength
 	}
 
 	// record type
-	r.Type = typeRunLengthChunk
+	r.Type = TypeTCCRunLengthChunk
 
 	// get PacketStatusSymbol
 	// r.PacketStatusSymbol = uint16(rawPacket[0] >> 5 & 0x03)
@@ -147,17 +145,17 @@ func (r *RunLengthChunk) Unmarshal(rawPacket []byte) error {
 // |T|S|       symbol list         |
 // +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 type StatusVectorChunk struct {
-	iPacketStautsChunk
-	// T = typeRunLengthChunk
+	PacketStatusChunk
+	// T = TypeTCCRunLengthChunk
 	Type uint16
 
-	// typeSymbolSizeOneBit or typeSymbolSizeTwoBit
+	// TypeTCCSymbolSizeOneBit or TypeTCCSymbolSizeTwoBit
 	SymbolSize uint16
 
-	// when SymbolSize = typeSymbolSizeOneBit, SymbolList is 14*1bit:
-	// typeSymbolListPacketReceived or typeSymbolListPacketNotReceived
-	// when SymbolSize = typeSymbolSizeTwoBit, SymbolList is 7*2bit:
-	// typePacketNotReceived typePacketReceivedSmallDelta typePacketReceivedLargeDelta or typePacketReserved
+	// when SymbolSize = TypeTCCSymbolSizeOneBit, SymbolList is 14*1bit:
+	// TypeTCCSymbolListPacketReceived or TypeTCCSymbolListPacketNotReceived
+	// when SymbolSize = TypeTCCSymbolSizeTwoBit, SymbolList is 7*2bit:
+	// TypeTCCPacketNotReceived TypeTCCPacketReceivedSmallDelta TypeTCCPacketReceivedLargeDelta or typePacketReserved
 	SymbolList []uint16
 }
 
@@ -176,10 +174,10 @@ func (r StatusVectorChunk) Marshal() ([]byte, error) {
 
 	// append 14 bit SymbolList
 	for _, s := range r.SymbolList {
-		if r.SymbolSize == typeSymbolSizeOneBit {
+		if r.SymbolSize == TypeTCCSymbolSizeOneBit {
 			dst = appendNBitsToUint16(dst, 1, s)
 		}
-		if r.SymbolSize == typeSymbolSizeTwoBit {
+		if r.SymbolSize == TypeTCCSymbolSizeTwoBit {
 			dst = appendNBitsToUint16(dst, 2, s)
 		}
 	}
@@ -192,14 +190,14 @@ func (r StatusVectorChunk) Marshal() ([]byte, error) {
 
 // Unmarshal ..
 func (r *StatusVectorChunk) Unmarshal(rawPacket []byte) error {
-	if len(rawPacket) != packetStautsChunkLength {
+	if len(rawPacket) != packetStatusChunkLength {
 		return errPacketStatusChunkLength
 	}
 
-	r.Type = typeStatusVectorChunk
+	r.Type = TypeTCCStatusVectorChunk
 	r.SymbolSize = getNBitsFromByte(rawPacket[0], 1, 1)
 
-	if r.SymbolSize == typeSymbolSizeOneBit {
+	if r.SymbolSize == TypeTCCSymbolSizeOneBit {
 		for i := uint16(0); i < 6; i++ {
 			r.SymbolList = append(r.SymbolList, getNBitsFromByte(rawPacket[0], 2+i, 1))
 		}
@@ -208,7 +206,7 @@ func (r *StatusVectorChunk) Unmarshal(rawPacket []byte) error {
 		}
 		return nil
 	}
-	if r.SymbolSize == typeSymbolSizeTwoBit {
+	if r.SymbolSize == TypeTCCSymbolSizeTwoBit {
 		for i := uint16(0); i < 3; i++ {
 			r.SymbolList = append(r.SymbolList, getNBitsFromByte(rawPacket[0], 2+i*2, 2))
 		}
@@ -223,8 +221,8 @@ func (r *StatusVectorChunk) Unmarshal(rawPacket []byte) error {
 }
 
 const (
-	//https://tools.ietf.org/html/draft-holmer-rmcat-transport-wide-cc-extensions-01#section-3.1.5
-	delta250us = 250
+	//TypeTCCDeltaScaleFactor https://tools.ietf.org/html/draft-holmer-rmcat-transport-wide-cc-extensions-01#section-3.1.5
+	TypeTCCDeltaScaleFactor = 250
 )
 
 // RecvDelta are represented as multiples of 250us
@@ -239,17 +237,17 @@ type RecvDelta struct {
 
 // Marshal ..
 func (r RecvDelta) Marshal() ([]byte, error) {
-	delta := r.Delta / delta250us
+	delta := r.Delta / TypeTCCDeltaScaleFactor
 
 	//small delta
-	if r.Type == typePacketReceivedSmallDelta && delta >= 0 && delta <= math.MaxUint8 {
+	if r.Type == TypeTCCPacketReceivedSmallDelta && delta >= 0 && delta <= math.MaxUint8 {
 		deltaChunk := make([]byte, 1)
 		deltaChunk[0] = byte(delta)
 		return deltaChunk, nil
 	}
 
 	//big delta
-	if r.Type == typePacketReceivedLargeDelta && delta >= math.MinInt16 && delta <= math.MaxInt16 {
+	if r.Type == TypeTCCPacketReceivedLargeDelta && delta >= math.MinInt16 && delta <= math.MaxInt16 {
 		deltaChunk := make([]byte, 2)
 		binary.BigEndian.PutUint16(deltaChunk, uint16(delta))
 		return deltaChunk, nil
@@ -269,13 +267,13 @@ func (r *RecvDelta) Unmarshal(rawPacket []byte) error {
 	}
 
 	if chunkLen == 1 {
-		r.Type = typePacketReceivedSmallDelta
-		r.Delta = delta250us * int64(rawPacket[0])
+		r.Type = TypeTCCPacketReceivedSmallDelta
+		r.Delta = TypeTCCDeltaScaleFactor * int64(rawPacket[0])
 		return nil
 	}
 
-	r.Type = typePacketReceivedLargeDelta
-	r.Delta = delta250us * int64(binary.BigEndian.Uint16(rawPacket))
+	r.Type = TypeTCCPacketReceivedLargeDelta
+	r.Delta = TypeTCCDeltaScaleFactor * int64(int16(binary.BigEndian.Uint16(rawPacket)))
 	return nil
 }
 
@@ -313,7 +311,7 @@ type TransportLayerCC struct {
 	FbPktCount uint8
 
 	// PacketChunks
-	PacketChunks []iPacketStautsChunk
+	PacketChunks []PacketStatusChunk
 
 	// RecvDeltas
 	RecvDeltas []*RecvDelta
@@ -325,27 +323,30 @@ type TransportLayerCC struct {
 // return Header{
 // Padding: true,
 // Count:   FormatTCC,
-// Type:    TypeTransportSpecificFeedback,
+// Type:    TypeTCCTransportSpecificFeedback,
 // // https://tools.ietf.org/html/rfc4585#page-33
 // Length: uint16((t.len() / 4) - 1),
 // }
 // }
 
-// total bytes with padding
-func (t *TransportLayerCC) len() int {
-	n := headerLength + packetChunkOffset + len(t.PacketChunks)*2
+func (t *TransportLayerCC) packetLen() uint16 {
+	n := uint16(headerLength + packetChunkOffset + len(t.PacketChunks)*2)
 	for _, d := range t.RecvDeltas {
-		delta := d.Delta / delta250us
+		delta := d.Delta / TypeTCCDeltaScaleFactor
 
 		// small delta
 		if delta >= 0 && delta <= math.MaxUint8 {
 			n++
-			// big delta
-		} else if delta >= math.MinInt16 && delta <= math.MaxInt16 {
+		} else {
 			n += 2
 		}
 	}
+	return n
+}
 
+// Len return total bytes with padding
+func (t *TransportLayerCC) Len() uint16 {
+	n := t.packetLen()
 	// has padding
 	if n%4 != 0 {
 		n = (n/4 + 1) * 4
@@ -380,7 +381,8 @@ func (t TransportLayerCC) Marshal() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	payload := make([]byte, t.len()-headerLength)
+
+	payload := make([]byte, t.Len()-headerLength)
 	binary.BigEndian.PutUint32(payload, t.SenderSSRC)
 	binary.BigEndian.PutUint32(payload[4:], t.MediaSSRC)
 	binary.BigEndian.PutUint16(payload[baseSequenceNumberOffset:], t.BaseSequenceNumber)
@@ -388,26 +390,30 @@ func (t TransportLayerCC) Marshal() ([]byte, error) {
 	ReferenceTimeAndFbPktCount := appendNBitsToUint32(0, 24, t.ReferenceTime)
 	ReferenceTimeAndFbPktCount = appendNBitsToUint32(ReferenceTimeAndFbPktCount, 8, uint32(t.FbPktCount))
 	binary.BigEndian.PutUint32(payload[referenceTimeOffset:], ReferenceTimeAndFbPktCount)
-	dumpBinary(payload)
+
 	for i, chunk := range t.PacketChunks {
 		b, err := chunk.Marshal()
 		if err == nil {
 			copy(payload[packetChunkOffset+i*2:], b)
 		}
 	}
-	dumpBinary(payload)
-	for i, delta := range t.RecvDeltas {
+
+	recvDeltaOffset := packetChunkOffset + len(t.PacketChunks)*2
+	var i int
+	for _, delta := range t.RecvDeltas {
 		b, err := delta.Marshal()
 		if err == nil {
-			if delta.Type == typePacketReceivedSmallDelta {
-				copy(payload[packetChunkOffset+len(t.PacketChunks)*2+i:], b)
-			}
-			if delta.Type == typePacketReceivedLargeDelta {
-				copy(payload[packetChunkOffset+len(t.PacketChunks)*2+i*2:], b)
+			copy(payload[recvDeltaOffset+i:], b)
+			i++
+			if delta.Type == TypeTCCPacketReceivedLargeDelta {
+				i++
 			}
 		}
 	}
-	dumpBinary(payload)
+
+	if t.Header.Padding {
+		payload[len(payload)-1] = uint8(t.Len() - t.packetLen())
+	}
 
 	return append(header, payload...), nil
 }
@@ -443,71 +449,72 @@ func (t *TransportLayerCC) Unmarshal(rawPacket []byte) error {
 	t.BaseSequenceNumber = binary.BigEndian.Uint16(rawPacket[headerLength+baseSequenceNumberOffset:])
 	t.PacketStatusCount = binary.BigEndian.Uint16(rawPacket[headerLength+packetStatusCountOffset:])
 	t.ReferenceTime = get24BitsFromBytes(rawPacket[headerLength+referenceTimeOffset : headerLength+referenceTimeOffset+3])
-	t.FbPktCount = rawPacket[headerLength+fbPktCountOffset : headerLength+fbPktCountOffset+1][0]
+	t.FbPktCount = rawPacket[headerLength+fbPktCountOffset]
 
-	packetStautsPos := uint16(headerLength + packetChunkOffset)
-	for i := uint16(0); i < t.PacketStatusCount; i++ {
-		if packetStautsPos > totalLength {
+	packetStatusPos := uint16(headerLength + packetChunkOffset)
+	var processedPacketNum uint16
+	for processedPacketNum < t.PacketStatusCount {
+		if packetStatusPos+packetStatusChunkLength >= totalLength {
 			return errPacketTooShort
 		}
-		typ := getNBitsFromByte(rawPacket[packetStautsPos : packetStautsPos+1][0], 0, 1)
-		var iPacketStauts iPacketStautsChunk
+		typ := getNBitsFromByte(rawPacket[packetStatusPos : packetStatusPos+1][0], 0, 1)
+		var iPacketStatus PacketStatusChunk
 		switch typ {
-		case typeRunLengthChunk:
-			packetStauts := &RunLengthChunk{Type: typ}
-			iPacketStauts = packetStauts
-			err := packetStauts.Unmarshal(rawPacket[packetStautsPos : packetStautsPos+2])
+		case TypeTCCRunLengthChunk:
+			packetStatus := &RunLengthChunk{Type: typ}
+			iPacketStatus = packetStatus
+			err := packetStatus.Unmarshal(rawPacket[packetStatusPos : packetStatusPos+2])
 			if err != nil {
 				return err
 			}
-			if packetStauts.PacketStatusSymbol == typePacketReceivedSmallDelta ||
-				packetStauts.PacketStatusSymbol == typePacketReceivedLargeDelta {
-				recvDelta := &RecvDelta{Type: packetStauts.PacketStatusSymbol}
-				for j := uint16(0); j < packetStauts.RunLength; j++ {
-					t.RecvDeltas = append(t.RecvDeltas, recvDelta)
+			if packetStatus.PacketStatusSymbol == TypeTCCPacketReceivedSmallDelta ||
+				packetStatus.PacketStatusSymbol == TypeTCCPacketReceivedLargeDelta {
+				packetNumberToProcess := min(t.PacketStatusCount-processedPacketNum, packetStatus.RunLength)
+				for j := uint16(0); j < packetNumberToProcess; j++ {
+					t.RecvDeltas = append(t.RecvDeltas, &RecvDelta{Type: packetStatus.PacketStatusSymbol})
 				}
+				processedPacketNum += packetNumberToProcess
 			}
-		case typeStatusVectorChunk:
-			packetStauts := &StatusVectorChunk{Type: typ}
-			iPacketStauts = packetStauts
-			err := packetStauts.Unmarshal(rawPacket[packetStautsPos : packetStautsPos+2])
+		case TypeTCCStatusVectorChunk:
+			packetStatus := &StatusVectorChunk{Type: typ}
+			iPacketStatus = packetStatus
+			err := packetStatus.Unmarshal(rawPacket[packetStatusPos : packetStatusPos+2])
 			if err != nil {
 				return err
 			}
-			if packetStauts.SymbolSize == typeSymbolSizeOneBit {
-				for j := 0; j < len(packetStauts.SymbolList); j++ {
-					if packetStauts.SymbolList[j] == typePacketReceivedSmallDelta {
-						recvDelta := &RecvDelta{Type: typePacketReceivedSmallDelta}
-						t.RecvDeltas = append(t.RecvDeltas, recvDelta)
+			if packetStatus.SymbolSize == TypeTCCSymbolSizeOneBit {
+				for j := 0; j < len(packetStatus.SymbolList); j++ {
+					if packetStatus.SymbolList[j] == TypeTCCPacketReceivedSmallDelta {
+						t.RecvDeltas = append(t.RecvDeltas, &RecvDelta{Type: TypeTCCPacketReceivedSmallDelta})
 					}
 				}
 			}
-			if packetStauts.SymbolSize == typeSymbolSizeTwoBit {
-				for j := 0; j < len(packetStauts.SymbolList); j++ {
-					if packetStauts.SymbolList[j] == typePacketReceivedSmallDelta || packetStauts.SymbolList[j] == typePacketReceivedLargeDelta {
-						recvDelta := &RecvDelta{Type: packetStauts.SymbolList[j]}
-						t.RecvDeltas = append(t.RecvDeltas, recvDelta)
+			if packetStatus.SymbolSize == TypeTCCSymbolSizeTwoBit {
+				for j := 0; j < len(packetStatus.SymbolList); j++ {
+					if packetStatus.SymbolList[j] == TypeTCCPacketReceivedSmallDelta || packetStatus.SymbolList[j] == TypeTCCPacketReceivedLargeDelta {
+						t.RecvDeltas = append(t.RecvDeltas, &RecvDelta{Type: packetStatus.SymbolList[j]})
 					}
 				}
 			}
+			processedPacketNum += uint16(len(packetStatus.SymbolList))
 		}
-		packetStautsPos += 2
-		t.PacketChunks = append(t.PacketChunks, iPacketStauts)
+		packetStatusPos += packetStatusChunkLength
+		t.PacketChunks = append(t.PacketChunks, iPacketStatus)
 	}
 
-	recvDeltasPos := headerLength + packetChunkOffset + 2*t.PacketStatusCount
+	recvDeltasPos := packetStatusPos
 	for _, delta := range t.RecvDeltas {
 		if recvDeltasPos >= totalLength {
 			return errPacketTooShort
 		}
-		if delta.Type == typePacketReceivedSmallDelta {
+		if delta.Type == TypeTCCPacketReceivedSmallDelta {
 			err := delta.Unmarshal(rawPacket[recvDeltasPos : recvDeltasPos+1])
 			if err != nil {
 				return err
 			}
 			recvDeltasPos++
 		}
-		if delta.Type == typePacketReceivedLargeDelta {
+		if delta.Type == TypeTCCPacketReceivedLargeDelta {
 			err := delta.Unmarshal(rawPacket[recvDeltasPos : recvDeltasPos+2])
 			if err != nil {
 				return err
@@ -522,4 +529,11 @@ func (t *TransportLayerCC) Unmarshal(rawPacket []byte) error {
 // DestinationSSRC returns an array of SSRC values that this packet refers to.
 func (t TransportLayerCC) DestinationSSRC() []uint32 {
 	return []uint32{t.MediaSSRC}
+}
+
+func min(x, y uint16) uint16 {
+	if x < y {
+		return x
+	}
+	return y
 }
